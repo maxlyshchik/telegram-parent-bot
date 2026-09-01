@@ -1,4 +1,4 @@
-import bot from './bot.js';
+import { bot } from './bot.js';
 
 bot.launch()
     .then(() => {
