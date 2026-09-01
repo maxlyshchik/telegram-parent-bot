@@ -5,8 +5,38 @@ const openai = new OpenAI({
     baseURL: 'https://api.deepseek.com',
 });
 
-export async function generateTip() {
+const recentTips = [];
+
+// Жёсткая очистка ответа
+function cleanTip(raw) {
+    let cleaned = raw.trim();
+
+    // Удаляем фразы, которые являются копией запроса или рассуждениями
+    const removeRegex = /^(придумать|дай|предложи|совет|как занять|чем занять|идея:|вариант:|мы можем|давайте|например)\s*/i;
+    cleaned = cleaned.replace(removeRegex, '').trim();
+
+    // Если после удаления строка начинается с "придумать совет" – удаляем ещё раз
+    cleaned = cleaned.replace(/^придумать совет\s*/i, '').trim();
+
+    // Берём первое предложение (до . ! ?)
+    const match = cleaned.match(/^[^.!?]*[.!?]/);
+    if (match) {
+        return match[0];
+    }
+    // Если есть текст, но нет знака препинания – берём первые 100 символов и добавляем точку
+    if (cleaned.length > 0) {
+        return cleaned.slice(0, 100) + (cleaned.length > 100 ? '…' : '.');
+    }
+    return ''; // если пусто
+}
+
+async function generateTip(history = []) {
     try {
+        let avoidPrompt = '';
+        if (history.length > 0) {
+            avoidPrompt = `\nНе повторяй эти советы: ${history.join('; ')}.`;
+        }
+
         const completion = await openai.chat.completions.create({
             model: 'deepseek-v4-flash',
             messages: [
@@ -21,20 +51,29 @@ export async function generateTip() {
             max_tokens: 1024,
         });
 
-        const message = completion.choices[0]?.message;
-        const content = message?.content?.trim();
-        const reasoning = message?.reasoning_content?.trim();
+        let content = completion.choices[0]?.message?.content?.trim() || '';
 
-        const answer = content || reasoning;
-
-        if (!answer) {
-            console.error('Модель вернула пустой ответ.', JSON.stringify(completion, null, 2));
-            return 'Не удалось сгенерировать совет. Попробуйте позже.';
+        // Если после очистки пусто или слишком коротко (< 30 символов) – берём случайный из tips.js
+        if (!content || content.length < 10) {
+            const { tips } = await import('./tips.js');
+            content = tips[Math.floor(Math.random() * tips.length)];
+            console.warn('⚠️ Модель не дала качественного совета, использован запасной.');
         }
 
-        return answer;
+        // Сохраняем в историю (для избегания повторов)
+        recentTips.push(content);
+        if (recentTips.length > 10) recentTips.shift();
+
+        return content;
     } catch (error) {
         console.error('Ошибка генерации совета:', error);
-        return 'Не удалось сгенерировать совет. Попробуйте позже.';
+        const { tips } = await import('./tips.js');
+        return tips[Math.floor(Math.random() * tips.length)];
     }
+}
+
+export default generateTip
+
+export function getRecentTips() {
+    return [...recentTips];
 }

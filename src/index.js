@@ -1,4 +1,5 @@
 import { bot } from './bot.js';
+import './scheduler.js';
 
 bot.launch()
     .then(() => {

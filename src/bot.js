@@ -5,7 +5,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 
 import { tips } from './tips.js';
-import { generateTip } from './deepseek.js';
+import generateTip from './deepseek.js';
 
 const { PrismaClient } = pkg;
 const { Pool } = pg;
