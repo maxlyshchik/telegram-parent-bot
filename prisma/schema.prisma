@@ -13,4 +13,16 @@ model User {
   expiresAt   DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  payments    Payment[] // связь с платежами
+}
+
+model Payment {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  amount      Float
+  currency    String   // "USD"
+  txId        String   // ID транзакции от платёжной системы
+  status      String   // "pending", "paid", "failed"
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
 }

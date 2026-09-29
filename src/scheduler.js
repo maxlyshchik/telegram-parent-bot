@@ -35,6 +35,6 @@ async function postDailyTip() {
 cron.schedule('0 9 * * *', postDailyTip);
 
 // 2. Для теста: запускаем каждую минуту (раскомментируй, чтобы проверить, закомментируй после)
-cron.schedule('* * * * *', postDailyTip);
+// cron.schedule('* * * * *', postDailyTip);
 
 console.log('⏰ Планировщик задач запущен. Ожидаем ежедневной публикации в 9:00.');
