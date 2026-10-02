@@ -6,6 +6,7 @@ import pg from 'pg';
 
 import { tips } from './tips.js';
 import generateTip from './deepseek.js';
+import { nextGameTip, nextCraftTip, nextRecipeTip, nextBookTip } from './tipRotators.js';
 
 const { PrismaClient } = pkg;
 const { Pool } = pg;
@@ -33,7 +34,21 @@ bot.start(async (ctx) => {
   ctx.reply(`Привет, ${ctx.from.first_name}! Ты зарегистрирован.`);
 });
 
-bot.help((ctx) => ctx.reply('Я помогу тебе...'));
+bot.help((ctx) =>
+    ctx.reply(
+        '📖 Доступные команды:\n\n' +
+        '/start — регистрация\n' +
+        '/about — о боте\n' +
+        '/tip — случайный совет\n' +
+        '/generate — сгенерировать совет\n' +
+        '/game — игра на 15 минут\n' +
+        '/craft — поделка на 15 минут\n' +
+        '/recipe — рецепт на 15 минут\n' +
+        '/book — книга на 15 минут\n' +
+        '/subscribe — подписка\n' +
+        '/refund — возврат оплаты'
+    )
+);
 
 bot.command('about', (ctx) => {
   ctx.reply(
@@ -201,5 +216,10 @@ bot.command('refund', async (ctx) => {
     await ctx.reply('❌ Не удалось выполнить возврат. Попробуйте позже.');
   }
 });
+
+bot.command('game',   (ctx) => ctx.reply(`🎮 Игра на 15 минут:\n\n${nextGameTip()}`));
+bot.command('craft',  (ctx) => ctx.reply(`✂️ Поделка на 15 минут:\n\n${nextCraftTip()}`));
+bot.command('recipe', (ctx) => ctx.reply(`🍳 Рецепт на 15 минут:\n\n${nextRecipeTip()}`));
+bot.command('book',   (ctx) => ctx.reply(`📚 Книга на 15 минут:\n\n${nextBookTip()}`));
 
 export { bot, prisma };

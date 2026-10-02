@@ -38,7 +38,7 @@ async function generateTip(history = []) {
         }
 
         const completion = await openai.chat.completions.create({
-            model: 'deepseek-v4-flash',
+            model: 'deepseek-flash',
             messages: [
                 {
                     role: 'system',
